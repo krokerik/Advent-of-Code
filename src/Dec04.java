@@ -37,41 +37,26 @@ public class Dec04 {
         }
     }
     private static int part1(String row) {
-        MessageDigest alg = null;
-        try {
-            alg = MessageDigest.getInstance("MD5");
-        } catch (NoSuchAlgorithmException e) {
-            e.printStackTrace();
-        }
-        String hex = "";
-        int num = 1;
-        if(alg!=null)
-            while(!hex.startsWith("00000")){
-                hex = "";
-                String tempRow = row+num++;
-                byte[] digested = alg.digest(tempRow.getBytes());
-                for (byte b : digested) {
-                    String tempHex = Integer.toHexString(0xFF & b);
-                    if (tempHex.length() == 1)
-                        hex += "0";
-                    hex += tempHex;
-
-                }
-            }
-
-        return num-1;
+        return numIterationsToRepeatingZeroes(row,5);
     }
     private static int part2(String row) {
+        return numIterationsToRepeatingZeroes(row,6);
+    }
+    private static int numIterationsToRepeatingZeroes(String row,int numZeroes){
         MessageDigest alg = null;
         try {
             alg = MessageDigest.getInstance("MD5");
         } catch (NoSuchAlgorithmException e) {
             e.printStackTrace();
         }
+        String zeroes = "";
+        for(int i=0; i<numZeroes; i++){
+            zeroes+="0";
+        }
         String hex = "";
         int num = 1;
         if(alg!=null)
-            while(!hex.startsWith("000000")){
+            while(!hex.startsWith(zeroes)){
                 hex = "";
                 String tempRow = row+num++;
                 byte[] digested = alg.digest(tempRow.getBytes());
