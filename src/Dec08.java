@@ -58,7 +58,6 @@ public class Dec08 {
                 out+=c;
         }
         out += "\"";
-        System.out.println(out);
         return out.length()-row.length();
     }
 }
