@@ -45,7 +45,6 @@ public class Dec11 {
     }
 
     private static boolean validate(String pw) {
-        System.out.println(pw);
         boolean inARow = false,noConfusing = false,containPair = false;
         for(int i=0;i<pw.length();i++){
             char temp = pw.charAt(i);
