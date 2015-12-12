@@ -60,7 +60,7 @@ public class Dec12 {
                     sb.append(fuckJson[j]);
                 }
                 temp = sb.toString();
-                Pattern p = Pattern.compile(":\"red");
+                Pattern p = Pattern.compile(":\"red\"");
                 Matcher m = p.matcher(temp);
                 if(m.find()){
                     for(int j=indexes.peek();j<i+1;j++){
