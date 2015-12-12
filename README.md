@@ -1,6 +1,6 @@
 My solutions to Advent of Code, primarily solved in Java, sometimes JavaScript or C if I have the time.
 
-![Results](http://i.imgur.com/nVPdeGe.png)
+![Results](http://i.imgur.com/Kt2hPaP.png)
 
 _Advent of Code_ is a series of small programming puzzles for a variety of skill levels. They are self-contained and are just as appropriate for an expert who wants to stay sharp as they are for a beginner who is just learning to code. Each puzzle calls upon different skills and has two parts that build on a theme.
 
