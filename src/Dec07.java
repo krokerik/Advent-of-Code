@@ -38,8 +38,10 @@ public class Dec07 {
                 e.printStackTrace();
             }
         }
-        for(String wire:wires.keySet())
-            System.out.println(wire+": "+wires.get(wire));
+        for(String wire:wires.keySet()) {
+            if(wires.get(wire)<0)
+                System.out.println(wire + ": " + wires.get(wire)+Short.MAX_VALUE);
+        }
     }
     private static int part1(String row) {
         if(row.matches("[a-z0-9]+ -> [a-z]+")) {
