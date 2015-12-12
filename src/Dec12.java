@@ -2,6 +2,7 @@ import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.Stack;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -46,7 +47,33 @@ public class Dec12 {
         return nums;
     }
     private static int part2(String row) {
+        int nums = 0;
+        Stack<Integer> indexes = new Stack<>();
+        char[] fuckJson = row.toCharArray();
+        String temp;
+        for(int i=0; i<fuckJson.length; i++){
+            if(fuckJson[i]=='{' || fuckJson[i]=='[')
+                indexes.push(i);
+            else if(fuckJson[i]=='}') {
+                StringBuilder sb = new StringBuilder();
+                for(int j=indexes.peek();j<i+1;j++){
+                    sb.append(fuckJson[j]);
+                }
+                temp = sb.toString();
+                Pattern p = Pattern.compile(":\"red");
+                Matcher m = p.matcher(temp);
+                if(m.find()){
+                    for(int j=indexes.peek();j<i+1;j++){
+                        fuckJson[j] = '_';
+                    }
+                }
+                indexes.pop();
+            }
+            else if(row.charAt(i)==']'){
+                indexes.pop();
+            }
+        }
 
-        return 0;
+        return part1(String.valueOf(fuckJson));
     }
 }
