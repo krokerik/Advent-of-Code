@@ -41,14 +41,20 @@ public class Dec10 {
     private static int part1(String row) {
         String out = row;
         long start = System.currentTimeMillis();
-        for(int i=0;i<50;i++){
+        for(int i=0;i<40;i++){
             out = lookAndSay(out);
             System.out.println(i+" "+(System.currentTimeMillis()-start)/1000.0+"s");
         }
         return out.length();
     }
     private static int part2(String row) {
-        return 0;
+        String out = row;
+        long start = System.currentTimeMillis();
+        for(int i=0;i<50;i++){
+            out = lookAndSay(out);
+            System.out.println(i+" "+(System.currentTimeMillis()-start)/1000.0+"s");
+        }
+        return out.length();
     }
     private static String lookAndSay(String input){
         Pattern p = Pattern.compile("([0-9])(\\1*)?");
