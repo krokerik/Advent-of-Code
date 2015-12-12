@@ -43,7 +43,7 @@ public class Dec10 {
         long start = System.currentTimeMillis();
         for(int i=0;i<40;i++){
             out = lookAndSay(out);
-            System.out.println(i+" "+(System.currentTimeMillis()-start)/1000.0+"s");
+            System.out.println(i+1+" "+(System.currentTimeMillis()-start)/1000.0+"s");
         }
         return out.length();
     }
@@ -52,7 +52,7 @@ public class Dec10 {
         long start = System.currentTimeMillis();
         for(int i=0;i<50;i++){
             out = lookAndSay(out);
-            System.out.println(i+" "+(System.currentTimeMillis()-start)/1000.0+"s");
+            System.out.println(i+1+" "+(System.currentTimeMillis()-start)/1000.0+"s");
         }
         return out.length();
     }
