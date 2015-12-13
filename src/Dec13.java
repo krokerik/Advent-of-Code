@@ -89,7 +89,7 @@ public class Dec13 {
             System.out.print(person.name + " ");
         System.out.println();
     }
-    public static ArrayList<Person> swap(ArrayList<Person> arr, int pos1, int pos2){
+    private static ArrayList<Person> swap(ArrayList<Person> arr, int pos1, int pos2){
         ArrayList<Person> tempArr = new ArrayList<>();
         tempArr.addAll(arr);
         if(pos1!=pos2) {
@@ -110,9 +110,7 @@ public class Dec13 {
             String rName = people.get(rIndex).name;
             tot += people.get(i).getOpinion(lName);
             tot += people.get(i).getOpinion(rName);
-            System.out.print(people.get(i).name + " ");
         }
-        System.out.print(tot + "\n");
         return tot;
     }
 
