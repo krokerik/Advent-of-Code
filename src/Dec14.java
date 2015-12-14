@@ -18,7 +18,6 @@ public class Dec14 {
         private int distance;
         private int restStart;
         private int runStart;
-        private int time;
         private int score;
         private boolean flying = true;
         public Reindeer(String name, int speed, int runTime, int rest){
@@ -27,7 +26,6 @@ public class Dec14 {
             this.runTime = runTime;
             this.rest = rest;
             this.distance = 0;
-            this.time = 0;
             this.restStart = 0;
             this.runStart = 0;
             this.score = 0;
@@ -47,8 +45,6 @@ public class Dec14 {
                     restStart=0;
                 }
             }
-
-            time++;
             return getDistance();
         }
         public int getScore() {
