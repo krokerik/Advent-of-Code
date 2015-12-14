@@ -23,7 +23,7 @@ public class Dec14 {
             time++;
             if(time-restStart>rest)
                 distance+=speed;
-            if(time-restStart-restStart>rest)
+            if(time-restStart-restStart>runTime)
                 restStart = time;
 
             return getDistance();
