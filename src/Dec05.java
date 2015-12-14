@@ -65,10 +65,8 @@ public class Dec05 {
 
         p = Pattern.compile("(ab)|(cd)|(pq)|(xy)");
         m = p.matcher(word);
-        if(m.find())
-            return false;
+        return !m.find();
 
-        return true;
     }
     private static boolean isNice2(String word){
         Pattern p = Pattern.compile("(..).*\\1");
@@ -78,9 +76,7 @@ public class Dec05 {
 
         p = Pattern.compile("(.).\\1");
         m = p.matcher(word);
-        if(!m.find())
-            return false;
+        return m.find();
 
-        return true;
     }
 }

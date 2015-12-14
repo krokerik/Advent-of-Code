@@ -57,7 +57,7 @@ public class Dec14 {
             return distance;
         }
     }
-    private static ArrayList<Reindeer> reindeers = new ArrayList<Reindeer>();
+    private static ArrayList<Reindeer> reindeers = new ArrayList<>();
     public static void main(String[] args) {
         if(args.length>0)
             for(String test:args) {

@@ -47,7 +47,6 @@ public class Dec12 {
         return nums;
     }
     private static int part2(String row) {
-        int nums = 0;
         Stack<Integer> indexes = new Stack<>();
         char[] fuckJson = row.toCharArray();
         String temp;
