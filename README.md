@@ -1,4 +1,4 @@
-My solutions to Advent of Code, primarily solved in Java, sometimes JavaScript or C if I have the time.
+My solutions to Advent of Code, primarily solved in Java, sometimes Clojure if I have the time.
 
 ![Results](http://i.imgur.com/DSHcAum.png)
 
