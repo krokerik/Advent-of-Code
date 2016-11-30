@@ -18,7 +18,7 @@ public class Dec02 {
         else {
             BufferedReader br = null;
             try {
-                br = new BufferedReader(new FileReader("input/02.txt"));
+                br = new BufferedReader(new FileReader("../input/02.txt"));
             } catch (FileNotFoundException e) {
                 System.err.println("Put your input in a file placed in the" +
                         " relative path \"input/02.txt\" to where you run it." +

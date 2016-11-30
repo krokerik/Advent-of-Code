@@ -12,7 +12,7 @@ public class Dec06 {
 
         BufferedReader br;
         try {
-            br = new BufferedReader(new FileReader("input/06.txt"));
+            br = new BufferedReader(new FileReader("../input/06.txt"));
             while (br.ready()) {
                 String row = br.readLine();
                 part1(row);
