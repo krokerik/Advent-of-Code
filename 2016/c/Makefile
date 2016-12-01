@@ -10,6 +10,6 @@ clean:
 
 .SECONDEXPANSION:
 $(PROBS): $$@.o
-	$(CC)  -o $@ $^
+	$(CC) -g -o $@ $^
 $(OBJ): $$(basename $$@).c
-	$(CC) -c $^
+	$(CC) -g -c $^
