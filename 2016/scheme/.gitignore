@@ -1,0 +1,4 @@
+*
+!*.scm
+!Makefile
+!.gitignore
