@@ -44,18 +44,19 @@ int getButton(char* instructions, int button) {
 }
 
 int moveButton(int button, char instruction) {
+	int init = button;
 	switch(instruction) {
 		case UP:
 			button -= (button>3)?3:0;
 			break;
 		case LEFT:
-			button -= (button>1)?1:0;
+			button -= (button%3!=1)?1:0;
 			break;
 		case DOWN:
 			button += (button<7)?3:0;
 			break;
 		case RIGHT:
-			button += (button<9)?1:0;
+			button += (button%3!=0)?1:0;
 			break;
 		default:
 			fprintf(stderr, "Invalid instruction '%c'\n",instruction);
