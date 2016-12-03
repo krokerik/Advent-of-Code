@@ -104,7 +104,7 @@ void traverse(char* instructions) {
 				   history[i].east==position.east) {
 					printf("loop at (%d;%d), distance: %d\n",position.north,
 					       position.east,
-						   abs(position.north)+abs(position.east));
+					       abs(position.north)+abs(position.east));
 					looped = 1;
 				}
 			}
