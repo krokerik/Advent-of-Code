@@ -36,8 +36,6 @@ int main() {
 		currentDiamond = getDiamondButton(line, currentDiamond);
 		printf("%c\t%c\n",currentSquare, currentDiamond);
 	}
-	printf("\n");
-
 	fclose(fp);
 	free(line);
 	exit(EXIT_SUCCESS);
