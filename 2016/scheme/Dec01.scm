@@ -1,22 +1,25 @@
 (use utils)
-(define INPUT "../input/01.txt")
-(define test (list
-	"R5" "L5" "R5" "R3"))
+(define INPUT (string-split (read-all "../input/01.txt") ", "))
 	
-(define (curry func arg1)  (lambda (arg) (apply func (cons arg1 (list arg)))))
+(define (take n xs)
+  (if (or (zero? n) (null? xs))
+      (list)
+      (cons (car xs) (take (- n 1) (cdr xs)))))
 
 (define getDirection
 	(lambda(instruction)
 		(string-take instruction 1)))
+
 (define getDistance
 	(lambda(instruction)
 		(string->number (string-copy instruction 1))))
 
-(define getTotalDistance
-	(lambda(total distance direction)
-		(abs (if (or (eq? direction 0) (eq? direction 1))
-			(+ total distance)
-			(- total distance)))))
+
+(define getDirDist
+	(lambda(x direction distance)
+		(if (eq? direction x)
+			distance
+			0)))
 
 (define getFacing
 	(lambda(facing instruction)
@@ -28,14 +31,17 @@
 					(- facing 1)
 					3)))))
 
-(print (map getDirection test))
-(print (map getDistance test))
+(define totFacing
+	(lambda(instructions)
+		(foldl getFacing 0 instructions)))
 
-(print(foldl getFacing 0 test))
+(define unroll
+	(lambda(ns pos)
+		(if (eq? pos (length ns))
+			(list ns)
+			(cons (take pos ns) (unroll ns (+ pos 1))))))
 
-(print (getTotalDistance 0 (getDistance "L5") (getFacing 0 "L5")))
-
-; n number of instructions
-;  take 1..n first instructions
-;   get result of (foldl getFacing 0 instructions)
-;    save to list
+(print (+ (abs (- (foldl + 0 (map (lambda(dir dist) (getDirDist 0 dir dist)) (map totFacing (unroll INPUT 1)) (map getDistance INPUT)))
+                  (foldl + 0 (map (lambda(dir dist) (getDirDist 2 dir dist)) (map totFacing (unroll INPUT 1)) (map getDistance INPUT)))))
+          (abs (- (foldl + 0 (map (lambda(dir dist) (getDirDist 1 dir dist)) (map totFacing (unroll INPUT 1)) (map getDistance INPUT)))
+                  (foldl + 0 (map (lambda(dir dist) (getDirDist 3 dir dist)) (map totFacing (unroll INPUT 1)) (map getDistance INPUT)))))))
