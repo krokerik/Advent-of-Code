@@ -1,11 +1,11 @@
 SRC = $(wildcard *.clj)
-PROBS = $(basename $(SRC))
+PROBS = $(SRC:.clj=.out)
 
-.PHONY: all clean $(PROBS)
+.PHONY: all clean
 all: $(PROBS)
 clean:
 	rm -f *.class
 
 .SECONDEXPANSION:
-$(PROBS): $$@.clj
-	java -cp ~/.clojure/clojure.jar clojure.main $^ > $@.out
+$(PROBS): $$(basename $$@).clj
+	java -cp ~/.clojure/clojure.jar clojure.main $^ > $@
