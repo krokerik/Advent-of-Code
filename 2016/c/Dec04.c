@@ -3,10 +3,12 @@
 #include <string.h>
 
 #define INPUT "../input/04.txt"
+#define SEARCH "northpole object storage"
 
 int getValidID(char * room);
 char* generateChecksum(int* frequency);
 int contains(char* word, char letter);
+char* rotate(char* word, int times);
 
 int main() {
 	FILE * fp;
@@ -33,7 +35,7 @@ int main() {
 int getValidID(char * room) {
 	int id = 0, lastDash = 0, numDashes = 0, letters[26];
 	char tmpID[4], checksum[6];
-	char* genChecksum;
+	char *genChecksum, *name;
 
 	for(int i=0; i<strlen(room); i++) {
 		if('-' == room[i]) {
@@ -41,6 +43,9 @@ int getValidID(char * room) {
 			numDashes++;
 		}
 	}
+	name = malloc(sizeof(char)*lastDash+1);
+	name = strncpy(name,room,lastDash);
+	name[lastDash] = '\0';
 
 	for(int i=0; i<26; i++) {
 		letters[i] = 0;
@@ -50,7 +55,6 @@ int getValidID(char * room) {
 		tmpID[i] = room[lastDash+i+1];
 	}
 	tmpID[3] = '\0';
-	
 	numDashes = 0;
 	for(int i=0; i<lastDash; i++) {
 		if('-' == room[i]) {
@@ -70,7 +74,11 @@ int getValidID(char * room) {
 	if(strcmp(checksum,genChecksum)!=0) {
 		id = 0;
 	}
+	if(strcmp(SEARCH,rotate(name,id))==0) {
+		printf("%d is %s\n",id,name);
+	}
 	free(genChecksum);
+	free(name);
 	return id;
 }
 
@@ -100,4 +108,22 @@ int contains(char* word, char letter) {
 		if(word[i] == letter)
 			return 1;
 	return 0;
+}
+char* rotate(char* word, int times) {
+	if(times==0)
+		return word;
+	for(int i=0, len=strlen(word); i<len; i++) {
+		switch(word[i]){
+			case '-':
+				word[i] = ' ';
+			case ' ':
+				break;
+			case 'z':
+				word[i] = 'a';
+				break;
+			default:
+				word[i]++;
+		}
+	}
+	return rotate(word,times-1);
 }
