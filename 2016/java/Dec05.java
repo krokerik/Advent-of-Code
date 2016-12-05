@@ -4,6 +4,8 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.*;
+
 
 /**
  * @author Erik Andersson on 2016-12-05.
@@ -12,8 +14,8 @@ public class Dec05 {
     public static void main(String[] args) {
         if(args.length>0)
             for(String test:args) {
-                System.out.println(getPassword(test));
-                //System.out.println(part2(test));
+                System.out.println("\r"+getPassword(test));
+                System.out.println("\r"+getPositionPassword(test));
             }
         else {
             BufferedReader br = null;
@@ -28,8 +30,8 @@ public class Dec05 {
             try {
                 while (br != null && br.ready()) {
                     String row = br.readLine();
-                    System.out.println(getPassword(row));
-                    //System.out.println(part2(row));
+                    System.out.println("\r"+getPassword(row));
+                    System.out.println("\r"+getPositionPassword(row));
                 }
             } catch (IOException e) {
                 e.printStackTrace();
@@ -45,13 +47,41 @@ public class Dec05 {
 			index++;
 			if(hash.startsWith("00000")) {
 				password += hash.charAt(5);
-				System.out.println(password);
+				System.out.print("\r"+password);
+				System.out.flush();
 			}
 		} while(password.length() < 8);
         return password;
     }
 	
-	
+    private static String getPositionPassword(String base) {
+		int index = 0, numSet = 0;
+		String hash;
+		char[] password = { ' ',
+		                    ' ',
+		                    ' ',
+		                    ' ',
+		                    ' ',
+		                    ' ',
+		                    ' ',
+		                    ' ' };
+
+		do {
+			String id = base + index;
+			hash = getHash(id);
+			index++;
+			if(hash.startsWith("00000")) {
+				int pos = Character.getNumericValue(hash.charAt(5));
+				if(pos < 8 && password[pos] == ' ') {
+					password[pos] = hash.charAt(6);
+					numSet++;
+				}
+				System.out.print("\r"+new String(password));
+				System.out.flush();
+			}
+		} while(numSet<8);
+        return new String(password);
+	}
 	
 	private static String getHash(String str) {
 		MessageDigest alg = null;
