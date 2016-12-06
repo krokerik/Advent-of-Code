@@ -34,17 +34,28 @@ int main() {
 			free(tmp);
 		}
 	}
-
+	char* part1 = malloc(wordlen+1);
+	char* part2 = malloc(wordlen+1);
 	for(int i=0; i<wordlen; i++) {
-		int pop = 0;
+		int most  = 0;
+		int least = 0;
 		for(int j=0; j<26; j++) {
-			pop = freq[i][pop]>freq[i][j]?pop:j;
+			if(freq[i][j]!=0) {
+				most = freq[i][most]>freq[i][j]?most:j;
+				least = freq[i][least]<freq[i][j]?least:j;
+			}
 		}
-		printf("%c",pop+'a');
+		part1[i] = most+'a';
+		part2[i] = least+'a';
 		free(freq[i]);
 	}
-	printf("\n");
+	part1[wordlen] = '\0';
+	part2[wordlen] = '\0';
+	printf("part1 %s\n", part1);
+	printf("part2 %s\n", part2);
 
+	free(part1);
+	free(part2);
 	fclose(fp);
 	free(line);
 	free(freq);
