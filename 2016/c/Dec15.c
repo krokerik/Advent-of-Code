@@ -35,13 +35,14 @@ int main() {
 		statue = addDisc(statue,parse(line));
 	}
 
+	time = statue->disc->positions-statue->disc->current-1;
 	while(!isSolved(statue,time)){
 		printf("\rtime: %d",time);
 		fflush(stdout);
-		time++;
+		time+=statue->disc->positions;
 	}
 	printf("\rpart 1: %d\n",time);
-	time = 0;
+	time = statue->disc->positions-statue->disc->current-1;
 	disc_type* new = malloc(sizeof(disc_type));
 	new->positions = 11;
 	new->current = 0;
@@ -49,7 +50,7 @@ int main() {
 	while(!isSolved(statue,time)){
 		printf("\rtime: %d",time);
 		fflush(stdout);
-		time++;
+		time+=statue->disc->positions;
 	}
 	printf("\rpart 2: %d\n",time);
 
