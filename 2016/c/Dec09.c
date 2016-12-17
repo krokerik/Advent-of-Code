@@ -59,7 +59,7 @@ int uncompress(char* raw){
 	return total;
 }
 long long uncompressV2(char* raw){
-	int pos,amount, times;
+	int amount, times;
 	long long total=0;
 	for(int i=0; i<strlen(raw); i++){
 		printf("\r%7.3f%%",(float)i/strlen(raw)*100);
