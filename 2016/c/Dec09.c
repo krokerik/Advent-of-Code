@@ -5,6 +5,7 @@
 #define INPUT "../input/09.txt"
 
 int uncompress(char* raw);
+char* uncompressV2(char* raw);
 
 int main() {
 	FILE* fp;
@@ -18,7 +19,10 @@ int main() {
 	}
 
 	for(int i = 0;getline(&line, &len, fp) != -1; i++) {
-		printf("%d\n",uncompress(line));
+		printf("basic uncompress:    %d\n",uncompress(line));
+		char* adv = uncompressV2(line);
+		printf("advanced uncompress: %d\n",strlen(adv)-1);
+		free(adv);
 	}
 
 	fclose(fp);
@@ -55,4 +59,44 @@ int uncompress(char* raw){
 		}
 	}
 	return total;
+}
+char* uncompressV2(char* raw){
+	char* uncompressed = malloc(sizeof(char)*strlen(raw)+2);
+	int pos,amount, times, total;
+	strcpy(uncompressed, raw);
+	for(int i=0; i<strlen(uncompressed); i++){
+		printf("\r%6.2f%%",(float)i/strlen(uncompressed)*100);
+		fflush(stdout);
+		if(uncompressed[i] == '('){
+			pos=i+1;
+			amount = atoi(uncompressed+pos);
+			do {
+				if(uncompressed[pos]=='x')
+					times = atoi(uncompressed+pos+1);
+				pos++;
+			}while(uncompressed[pos]!=')');
+			char* buffer = malloc((sizeof(char)*amount)+1);
+			strncpy(buffer, uncompressed+pos+1, amount);
+			buffer[amount] = '\0';
+			char* temp = uncompressV2(buffer);
+			free(buffer);
+			buffer = malloc((strlen(temp)*times)+1);
+			strcpy(buffer, temp);
+			for(int j=1; j<times; j++){
+				strcat(buffer,temp);
+			}
+			buffer[strlen(temp)*times] = '\0';
+			free(temp);
+			temp = malloc(sizeof(char)*(strlen(uncompressed)+strlen(buffer)));
+			strcpy(temp,uncompressed);
+			temp[i] = '\0';
+			strcat(temp,buffer);
+			strcat(temp,uncompressed+pos+amount+1);
+			i += strlen(buffer);
+			free(uncompressed);
+			free(buffer);
+			uncompressed = temp;
+		}
+	}
+	return uncompressed;
 }
