@@ -5,7 +5,7 @@
 #define INPUT "../input/09.txt"
 
 int uncompress(char* raw);
-char* uncompressV2(char* raw);
+long long uncompressV2(char* raw);
 
 int main() {
 	FILE* fp;
@@ -20,9 +20,7 @@ int main() {
 
 	for(int i = 0;getline(&line, &len, fp) != -1; i++) {
 		printf("basic uncompress:    %d\n",uncompress(line));
-		char* adv = uncompressV2(line);
-		printf("advanced uncompress: %d\n",strlen(adv)-1);
-		free(adv);
+		printf("\radvanced uncompress: %lli\n",uncompressV2(line)-1);
 	}
 
 	fclose(fp);
@@ -60,43 +58,29 @@ int uncompress(char* raw){
 	}
 	return total;
 }
-char* uncompressV2(char* raw){
-	char* uncompressed = malloc(sizeof(char)*strlen(raw)+2);
-	int pos,amount, times, total;
-	strcpy(uncompressed, raw);
-	for(int i=0; i<strlen(uncompressed); i++){
-		printf("\r%6.2f%%",(float)i/strlen(uncompressed)*100);
+long long uncompressV2(char* raw){
+	int pos,amount, times;
+	long long total=0;
+	for(int i=0; i<strlen(raw); i++){
+		printf("\r%7.3f%%",(float)i/strlen(raw)*100);
 		fflush(stdout);
-		if(uncompressed[i] == '('){
-			pos=i+1;
-			amount = atoi(uncompressed+pos);
+		if(raw[i] == '('){
+			i++;
+			amount = atoi(raw+i);
 			do {
-				if(uncompressed[pos]=='x')
-					times = atoi(uncompressed+pos+1);
-				pos++;
-			}while(uncompressed[pos]!=')');
+				if(raw[i]=='x')
+					times = atoi(raw+i+1);
+				i++;
+			}while(raw[i]!=')');
 			char* buffer = malloc((sizeof(char)*amount)+1);
-			strncpy(buffer, uncompressed+pos+1, amount);
+			strncpy(buffer, raw+i+1, amount);
 			buffer[amount] = '\0';
-			char* temp = uncompressV2(buffer);
+			total += uncompressV2(buffer)*times;
 			free(buffer);
-			buffer = malloc((strlen(temp)*times)+1);
-			strcpy(buffer, temp);
-			for(int j=1; j<times; j++){
-				strcat(buffer,temp);
-			}
-			buffer[strlen(temp)*times] = '\0';
-			free(temp);
-			temp = malloc(sizeof(char)*(strlen(uncompressed)+strlen(buffer)));
-			strcpy(temp,uncompressed);
-			temp[i] = '\0';
-			strcat(temp,buffer);
-			strcat(temp,uncompressed+pos+amount+1);
-			i += strlen(buffer);
-			free(uncompressed);
-			free(buffer);
-			uncompressed = temp;
+			i += amount;
+		}else{
+			total++;
 		}
 	}
-	return uncompressed;
+	return total;
 }
