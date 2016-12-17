@@ -3,7 +3,9 @@
 #include <string.h>
 
 #define INPUT  "../input/16.txt"
-#define LENGTH 272
+#define PART1  272
+#define PART2  35651584
+#define LENGTH PART2
 
 char* getDragon(char* data);
 char* getChecksum(char* data);
@@ -22,19 +24,10 @@ int main() {
 	for(int i = 0;getline(&line, &len, fp) != -1; i++) {
 		if(line[strlen(line)-1]=='\n')
 			line[strlen(line)-1]='\0';
-		char* data = malloc(strlen(line)+1);
-		strcpy(data,line);
-		data[strlen(line)] = '\0';
-		while(strlen(data)<LENGTH){
-			printf("\r%7.3f%%",(float)strlen(data)/LENGTH*100);
-			fflush(stdout);
-			char* tmp = getDragon(data);
-			free(data);
-			data = tmp;
-		}
+		char* data = getDragon(line);
 		data[LENGTH] = '\0';
 		char* checksum = getChecksum(data);
-		printf("\rchecksum %s\n",checksum);
+		printf("checksum %s\n",checksum);
 		free(checksum);
 		free(data);
 	}
@@ -44,31 +37,35 @@ int main() {
 }
 
 char* getDragon(char* data){
-	char* checksum = malloc((strlen(data)*2)+2);
-	for(int i=0; i < (strlen(data)*2)+1; i++){
-		if(i<strlen(data)){
-			checksum[i] = data[i];
-		}else if(i == strlen(data)){
-			checksum[i] = '0';
-		}else{
-			if(data[strlen(data)+(strlen(data)-i)] == '0')
-				checksum[i] = '1';
-			else
-				checksum[i] = '0';
+	int len = strlen(data), pos = 0;
+	char* dragon = malloc((LENGTH+1)*sizeof(char));
+	while(len<LENGTH){
+		for(int i=pos; i<len*2+1 && i<LENGTH; i++){
+			if(i<len){
+				dragon[i] = data[i];
+			}else if(i==len){
+				dragon[i] = '0';
+			}else{
+				dragon[i] = data[len+(len-i)]=='0'?'1':'0';
+			}
 		}
+		dragon[(len*2+1)<LENGTH?len*2+1:LENGTH] = '\0';
+		data = dragon;
+		len = strlen(dragon);
+		pos = strlen(dragon);
 	}
-	checksum[(strlen(data)*2)+1] = '\0';
-	return checksum;
+	return dragon;
 }
 
 char* getChecksum(char* data){
-	if(strlen(data)%2==1){
-		char* checksum = malloc(strlen(data)+1);
+	int len = strlen(data);
+	if(len%2==1){
+		char* checksum = malloc(len+1);
 		strcpy(checksum,data);
 		return checksum;
 	}
-	char* checksum = malloc((strlen(data)/2)+1);
-	for(int i=0; i<strlen(data); i+=2){
+	char* checksum = malloc((len/2)+1);
+	for(int i=0; i<len; i+=2){
 		checksum[i/2] = data[i]==data[i+1]?'1':'0';
 	}
 	checksum[strlen(data)/2] = '\0';
