@@ -1,7 +1,11 @@
 SUBDIRS := $(wildcard */.)
 
 all: $(SUBDIRS)
+
 $(SUBDIRS):
 	$(MAKE) -C $@
 
-.PHONY: all $(SUBDIRS)
+clean:
+	$(MAKE) -C $% clean
+
+.PHONY: clean all $(SUBDIRS)
