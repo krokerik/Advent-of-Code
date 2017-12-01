@@ -1,7 +1,9 @@
-SRC   = $(wildcard *.c)
-OBJ   = $(SRC:.c=.o)
-PROBS = $(basename $(SRC))
-CC    = gcc
+SRC    = $(wildcard *.c)
+OBJ    = $(SRC:.c=.o)
+PROBS  = $(basename $(SRC))
+CC     = gcc
+CFLAGS = -Wall -g
+CLIBS  = -lcrypto -lssl
 
 .PHONY: all clean
 all: $(PROBS)
@@ -10,6 +12,6 @@ clean:
 
 .SECONDEXPANSION:
 $(PROBS): $$@.o
-	$(CC) -g -o $@ $^
+	$(CC) $(CFLAGS) -o $@ $^ $(CLIBS)
 $(OBJ): $$(basename $$@).c
-	$(CC) -g -c $^
+	$(CC) $(CFLAGS) -c $^
