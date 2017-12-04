@@ -49,7 +49,6 @@ long part1(char* seq) {
 	for(int i=0; i<pos; i++) {
 		for(int j=i+1; j<pos; j++) {
 			if(strcmp(sentence[i],sentence[j])==0) {
-				printf("%s == %s\n",sentence[i],sentence[j]);
 				valid = 0;
 			}
 		}
@@ -73,7 +72,6 @@ long part2(char* seq) {
 	for(int i=0; i<pos; i++) {
 		for(int j=i+1; j<pos; j++) {
 			if(isAnagram(sentence[i],sentence[j])==1) {
-				printf("%s == %s\n",sentence[i],sentence[j]);
 				valid = 0;
 			}
 		}
@@ -89,8 +87,17 @@ int isAnagram(char* w1, char* w2) {
 	if(strlen(w1)!=strlen(w2)) {
 		valid = 0;
 	} else {
-		
+		int len = strlen(w1), alpha1[26] = {0}, alpha2[26] = {0};
+		for(int i=0; i<len; i++) {
+			alpha1[w1[i]-'a']++;
+			alpha2[w2[i]-'a']++;
+		}
+		for(int i=0; i<26; i++) {
+			if(alpha1[i]!=alpha2[i]) {
+				valid = 0;
+				break;
+			}
+		}
 	}
-	
 	return valid;
 }
