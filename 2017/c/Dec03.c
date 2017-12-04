@@ -8,7 +8,6 @@
 long part1(char* seq);
 long part2(char* seq);
 int** getSpiral(int width);
-int get_manhattan_distance(int input);
 
 int main() {
 	FILE * fp;
