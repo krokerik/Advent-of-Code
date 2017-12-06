@@ -29,8 +29,8 @@ int main() {
 	}
 	long* maze2 = malloc(sizeof(long)*num);
 	maze2 = memcpy(maze2,maze,sizeof(long)*num);
-	printf("number of jumps: %d\n",part1(maze, num));
-	printf("number of jumps: %d\n",part2(maze2, num));
+	printf("number of jumps: %d\n",part1(maze2, num));
+	printf("number of jumps: %d\n",part2(maze, num));
 	fclose(fp);
 	free(line);
 	free(maze);
