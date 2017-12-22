@@ -6,6 +6,7 @@
 
 int* genCircle(int len);
 void reverse(int* circle, int start, int end, int len, int iter);
+int* densify(int* sparse, int len);
 
 int main() {
 	FILE * fp;
@@ -17,30 +18,51 @@ int main() {
 		perror(INPUT);
 		exit(EXIT_FAILURE);
 	}
-
+	int circleSize    = 256,
+	    *circle       = genCircle(circleSize),
+	    *instructions = NULL,
+	    numInstr      = 0;
+		
 	while (getline(&line, &len, fp) != -1){
 		line[strcspn(line, "\r\n")] = 0; //remove line breaks.
-		int circleSize = 256,
-		    *circle   = genCircle(circleSize),
-		    pos      = 0,
-		    skipSize = 0;
-		const char s[3] = ", ";
-		char *token = strtok(line,s),
-		     *end;
+		while(line[numInstr]!='\0') {
+			if(instructions == NULL) {
+				instructions = malloc(sizeof(int));
+			} else {
+				instructions = realloc(instructions,sizeof(int)*(numInstr+1));
+			}
+			instructions[numInstr] = line[numInstr];
+			numInstr++;
+		}
+	}
+	instructions = realloc(instructions,sizeof(int)*(numInstr+5));
+	instructions[numInstr++] = 17;
+	instructions[numInstr++] = 31;
+	instructions[numInstr++] = 73;
+	instructions[numInstr++] = 47;
+	instructions[numInstr++] = 23;
 
-		while(token != NULL) {
-			int len = strtol(token,&end,10);
+	int skipSize = 0,
+	    pos      = 0;
+	for(int i=0; i<64; i++) {
+		for(int j=0; j<numInstr; j++) {
+			int len = instructions[j];
 			if(len>1)
 				reverse(circle,pos,(pos+len-1)%circleSize,circleSize,0);
 			pos += len + (skipSize++);
 			pos = pos%circleSize;
-			token = strtok(NULL, s);
 		}
-
-		printf("part1: %d\n",(circle[0]*circle[1]));
-		free(circle);
 	}
 
+	int* denseHash = densify(circle, circleSize);
+	for(int i=0; i<circleSize/16; i++) {
+		printf("%02x",denseHash[i]);
+	}
+	printf("\n");
+
+	free(circle);
+	free(instructions);
+	free(denseHash);
 	fclose(fp);
 	free(line);
 	exit(EXIT_SUCCESS);
@@ -61,4 +83,16 @@ void reverse(int* circle, int start, int end, int len, int iter) {
 	circle[end]   = tmp;
 	if(end == 0) end = len;
 	reverse(circle, (start+1)%len,end-1,len,iter+1);
+}
+
+int* densify(int* sparse, int len) {
+	int* denseArray = malloc(sizeof(int) * len/16);
+	for(int i=0; i<len/16; i++) {
+		denseArray[i] = 0;
+	}
+	for(int i=0; i<len; i++) {
+		denseArray[i/16] ^= sparse[i];
+	}
+
+	return denseArray;
 }
