@@ -4,8 +4,6 @@
 
 #define INPUT "../input/01.txt"
 
-int hasDuplicate(int* list, int len);
-
 int main() {
 	FILE * fp;
 	char * line   = NULL;
