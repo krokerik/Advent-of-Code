@@ -86,17 +86,12 @@ void* part2(void* arg) {
 
 char* react(char* polymer) {
 	int len = strlen(polymer);
-	int removedUnits = 0;
 	for(int i=0; i<len-1; i++) {
 		if(changePolarity(polymer[i]) == polymer[i+1]) {
 			memmove(polymer+i,polymer+i+2,len-i-2);
 			polymer[len-2] = '\0';
-			removedUnits = 1;
-			i+=2;
+			i = i-2<-1 ? -1 : i-2;
 		}
-	}
-	if(removedUnits) {
-		polymer = react(polymer);
 	}
 	return polymer;
 }
