@@ -11,6 +11,6 @@ clean:
 
 .SECONDEXPANSION:
 $(PROBS): $$@.o
-	$(CC) $(CFLAGS) -o $@ $^ -lm
+	$(CC) $(CFLAGS) -o $@ $^ -lm -pthread
 $(OBJ): $$(basename $$@).c
 	$(CC) $(CFLAGS) -c $^
