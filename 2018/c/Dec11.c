@@ -12,8 +12,7 @@ int main() {
 	FILE * fp;
 	char * line = NULL;
 	size_t len  = 0;
-	int grid[GRIDSIZE][GRIDSIZE] = {0};
-
+	int integral[GRIDSIZE][GRIDSIZE] = {0};
 	fp = fopen(INPUT, "r");
 	if (fp == NULL) {
 		perror(INPUT);
@@ -22,7 +21,6 @@ int main() {
 
 	while (getline(&line, &len, fp) != -1){
 		line[strcspn(line, "\r\n")] = 0; //remove line breaks.
-		printf("%s\n",line);
 		int gridSerial = atoi(line);
 		for(int i=0; i<GRIDSIZE; i++) {
 			for(int j=0; j<GRIDSIZE; j++) {
@@ -34,19 +32,33 @@ int main() {
 				powerLevel    *= rackID;
 				powerLevel     = getHundred(powerLevel);
 				powerLevel    -= 5;
-				grid[i][j]     = powerLevel;
+				integral[i][j] = powerLevel;
+				if(i>0) {
+					integral[i][j] += integral[i-1][j];
+				}
+				if(j>0) {
+					integral[i][j] += integral[i][j-1];
+				}
+				if(i>0 && j>0) {
+					integral[i][j] -= integral[i-1][j-1];
+				}
 			}
 		}
+
 		int biggestPower = INT_MIN;
 		int biggestX = -1;
 		int biggestY = -1;
 		for(int i=0; i<GRIDSIZE-2; i++) {
 			for(int j=0; j<GRIDSIZE-2; j++) {
-				int squarePower=0;
-				for(int k=i; k<i+3; k++) {
-					for(int l=j; l<j+3; l++) {
-						squarePower += grid[k][l];
-					}
+				int squarePower = integral[i+2][j+2];
+				if(i>0) {
+					squarePower -= integral[i-1][j+2];
+				}
+				if(j>0) {
+					squarePower -= integral[i+2][j-1];
+				}
+				if(i>0 && j>0) {
+					squarePower += integral[i-1][j-1];
 				}
 				if(squarePower>biggestPower) {
 					biggestPower = squarePower;
@@ -61,17 +73,21 @@ int main() {
 		biggestY = -1;
 		int biggestBlock = -1;
 		for(int blockSize=1; blockSize<GRIDSIZE; blockSize++) {
-			printf("block %dx%d\n",blockSize,blockSize);
-			for(int i=0; i<GRIDSIZE-(blockSize-1); i++) {
-				for(int j=0; j<GRIDSIZE-(blockSize-1); j++) {
-					int blockPower = 0;
-					for(int k=i; k<i+blockSize; k++) {
-						for(int l=j; l<j+blockSize; l++) {
-							blockPower += grid[k][l];
-						}
+			int offset = blockSize-1;
+			for(int i=0; i<GRIDSIZE-offset; i++) {
+				for(int j=0; j<GRIDSIZE-offset; j++) {
+					int squarePower = integral[i+offset][j+offset];
+					if(i>0) {
+						squarePower -= integral[i-1][j+offset];
 					}
-					if(blockPower>biggestPower) {
-						biggestPower = blockPower;
+					if(j>0) {
+						squarePower -= integral[i+offset][j-1];
+					}
+					if(i>0 && j>0) {
+						squarePower += integral[i-1][j-1];
+					}
+					if(squarePower>biggestPower) {
+						biggestPower = squarePower;
 						biggestX = i+1;
 						biggestY = j+1;
 						biggestBlock = blockSize;
