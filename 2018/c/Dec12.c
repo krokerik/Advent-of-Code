@@ -23,6 +23,7 @@ typedef struct pot {
 } pot;
 
 long getScore(pot* root);
+pot* createPot(int index, char content, pot* prev, pot* next);
 
 int main() {
 	FILE * fp;
@@ -33,6 +34,7 @@ int main() {
 	int lineNum = 0;
 	pot* first = NULL;
 	pot* last = NULL;
+
 	fp = fopen(INPUT, "r");
 	if (fp == NULL) {
 		perror(INPUT);
@@ -42,50 +44,19 @@ int main() {
 	while (getline(&line, &len, fp) != -1){
 		line[strcspn(line, "\r\n")] = 0; //remove line breaks.
 		if(lineNum==0) {
-			first = malloc(sizeof(pot));
-			first->prev = NULL;
-			first->next = NULL;
-			first->content = '.';
-			first->index = -2;
+			first = createPot(-2,'.',NULL,NULL);
 			last = first;
-			pot* tmp = malloc(sizeof(pot));
-			tmp->prev = last;
-			tmp->next = NULL;
-			tmp->content = '.';
-			tmp->index = -1;
-			first->next = tmp;
-			last = tmp;
+			first->next = createPot(-1,'.',first,NULL);
+			last = last->next;
 			int numPlants = strlen(line+15);
 			for(int i=0; i<numPlants; i++) {
-				pot* plant = malloc(sizeof(pot));
-				plant->index = i;
-				plant->content = line[15+i];
-				plant->next = NULL;
-				if(first == NULL) {
-					first = plant;
-					first->prev = NULL;
-					last = first;
-				} else {
-					last->next = plant;
-					plant->prev = last;
-					last = plant;
-				}
+				last->next = createPot(i,line[15+i],last,NULL);
+				last = last->next;
 			}
-			tmp = malloc(sizeof(pot));
-			tmp->index = last->index+1;
-			tmp->prev = last;
-			tmp->content = '.';
-			tmp->next = NULL;
-			last->next = tmp;
-			last = tmp;
-
-			tmp = malloc(sizeof(pot));
-			tmp->index = last->index+1;
-			tmp->prev = last;
-			tmp->content = '.';
-			tmp->next = NULL;
-			last->next = tmp;
-			last = tmp;
+			last->next = createPot(last->index+1,'.',last,NULL);
+			last = last->next;
+			last->next = createPot(last->index+1,'.',last,NULL);
+			last = last->next;
 		} else if(lineNum>1) {
 			rule rule;
 			for(int i=0; i<5; i++) {
@@ -155,46 +126,34 @@ int main() {
 		}
 
 		for(int i=0; i<2; i++) {
-			cur = first;
-			if(cur->content == '#' || cur->next->content == '#') {
-				int index = cur->index-1;
-				pot* plant = malloc(sizeof(pot));
-				plant->content = '.';
-				plant->index = index;
-				plant->prev = NULL;
-				plant->next = first;
-				first->prev = plant;
-				first = plant;
+			if(first->content == '#' || first->next->content == '#') {
+				first->prev = createPot(first->index-1,'.',NULL,first);
+				first = first->prev;
 			}
 		}
 
 		for(int i=0; i<2; i++) {
-			cur = last;
-			if(cur->content == '#' || cur->prev->content == '#') {
-				int index = cur->index+1;
-				pot* plant = malloc(sizeof(pot));
-				plant->content =  '.';
-				plant->index = index;
-				plant->prev = last;
-				plant->next = NULL;
-				last->next = plant;
-				last = plant;
+			if(last->content == '#' || last->prev->content == '#') {
+				last->next = createPot(last->index+1,'.',last,NULL);
+				last = last->next;
 			}
 		}
 		score = getScore(first);
 		int scoreDiff = score-prevScore;
+
 		if(diffLen == LINEARLENGTH) {
 			for(int i=0; i<diffLen-1; i++) {
 				scoreDiffs[i] = scoreDiffs[i+1];
 			}
 			scoreDiffs[LINEARLENGTH-1] = scoreDiff;
-			int equal = 0;
+			int equal = 1;
 			for(int i=0; i<diffLen; i++) {
-				if(scoreDiffs[i]==scoreDiff) {
-					equal++;
+				if(scoreDiffs[i]!=scoreDiff) {
+					equal = 0;
+					break;
 				}
 			}
-			if(equal == LINEARLENGTH) {
+			if(equal == 1) {
 				long gen = PART2 - (generation+1);
 				score += scoreDiff*gen;
 				printf("part2: %ld\n",score);
@@ -209,13 +168,11 @@ int main() {
 		}
 	}
 
-	pot* cur = first;
-	while(cur!=NULL) {
-		pot* tmp = cur;
-		cur = cur->next;
+	while(first!=NULL) {
+		pot* tmp = first;
+		first = first->next;
 		free(tmp);
 	}
-
 	free(rules);
 	fclose(fp);
 	free(line);
@@ -232,4 +189,21 @@ long getScore(pot* root) {
 		cur = cur->next;
 	}
 	return score;
+}
+
+pot* createPot(int index, char content, pot* prev, pot* next) {
+	pot* pot = malloc(sizeof(pot)*3);
+	pot->index = index;
+	pot->content = content;
+	if(prev == NULL) {
+		pot->prev = 0;
+	} else {
+		pot->prev = prev;
+	}
+	if(next == NULL) {
+		pot->next = 0;
+	} else {
+		pot->next = next;
+	}
+	return pot;
 }
