@@ -32,6 +32,7 @@ creature* getCreature(creature** creatures, int n);
 int getUnmoved(creature** creatures, int n);
 position getMove(creature* c, char ** map, int h, int w, creature** creatures, int n);
 int positionCmp(const void * a, const void * b);
+creature* getTarget(creature* c,creature** creatures,int n);
 
 int main() {
 	FILE * fp;
@@ -119,12 +120,16 @@ creature* createCreature(char type, int x, int y) {
 
 void printMap(char** map, int h, int w, creature** creatures, int n) {
 	for(int i=0; i<h; i++) {
+		int onRow[n];
+		int numOnRow = 0;
 		for(int j=0; j<w; j++) {
 			int found = 0;
 			for(int k=0; k<n; k++) {
 				position tmp = {j,i};
-				if(pos_compare(creatures[k]->pos, tmp)) {
+				if(creatures[k]->hp>0 && pos_compare(creatures[k]->pos, tmp)) {
 					found = 1;
+					onRow[numOnRow] = k;
+					numOnRow++;
 					switch(creatures[k]->type) {
 						case elf:
 							printf("%c", 'E');
@@ -141,6 +146,14 @@ void printMap(char** map, int h, int w, creature** creatures, int n) {
 			if(found == 0) {
 				printf("%c",map[i][j]);
 			}
+		}
+		for(int j=0; j<numOnRow; j++) {
+			if(creatures[onRow[j]]->type == elf) {
+				printf(" E");
+			} else {
+				printf(" G");
+			}
+			printf("(%d)",creatures[onRow[j]]->hp);
 		}
 		printf("\n");
 	}
@@ -160,22 +173,33 @@ int part1(char** map, int h, int w, creature** creatures, int n) {
 	int round      = 0;
 	int turn       = 0;
 
-	while((elfHP>0 && goblinHP>0) && turn < 4) {
+	while(elfHP>0 && goblinHP>0) {
 		turn++;
 		//aquire
 		creature* curr = getCreature(creatures,n);
-		curr->moved = 1;
-		position move = getMove(curr,map,h,w,creatures,n);
+
 		//move
+		position move = getMove(curr,map,h,w,creatures,n);
+//		printf("moving (%d,%d) to (%d,%d)\n",curr->pos.x,curr->pos.y,move.x,move.y);
 		curr->pos = move;
-		
+		curr->moved = 1;
+
 		//attack
+		creature* target = getTarget(curr,creatures,n);
+		if(target!=NULL) {
+//			printf("(%d,%d) attacking (%d,%d)\n",curr->pos.x,curr->pos.y,target->pos.x,target->pos.y);
+			target->hp -= curr->ap;
+		}
+
+		//reset
 		elfHP    = getHPOfType(creatures,n,elf);
 		goblinHP = getHPOfType(creatures,n,goblin);
 		if(getUnmoved(creatures,n) == 0) {
 			round++;
 			printf("round %d\n",round);
 			printMap(map,h,w,creatures,n);
+			printf("elf: %d\n",elfHP);
+			printf("goblin: %d\n",goblinHP);
 			for(int i=0; i<n; i++) {
 				creatures[i]->moved = 0;
 			}
@@ -183,6 +207,9 @@ int part1(char** map, int h, int w, creature** creatures, int n) {
 		}
 	}
 	printMap(map,h,w,creatures,n);
+	printf("elf: %d\n",elfHP);
+	printf("goblin: %d\n",goblinHP);
+	printf("round: %d\n",round);
 	int winner = elfHP>goblinHP ? elfHP : goblinHP;
 	return round * winner;
 }
@@ -200,12 +227,18 @@ int getHPOfType(creature** list, int n, type t) {
 creature* getCreature(creature** creatures, int n) {
 	creature* c = creatures[0];
 	for(int i=0; i<n; i++) {
-		if(c->moved == 1 || c->hp <= 0 || (creatures[i]->pos.x < c->pos.x &&
-		    creatures[i]->pos.y < c->pos.y &&
+		if(c->moved == 1 || c->hp <= 0 ||
+		   ((creatures[i]->pos.y < c->pos.y ||
+		    (creatures[i]->pos.x < c->pos.x &&
+		    creatures[i]->pos.y <= c->pos.y)) &&
 		    creatures[i]->moved == 0 &&
 		    creatures[i]->hp > 0)) {
 		   	c = creatures[i];
 		   }
+	}
+	if(c->hp<0) {
+		fprintf(stderr,"returning dead character!\n");
+		exit(EXIT_FAILURE);
 	}
 	return c;
 }
@@ -242,14 +275,16 @@ position getMove(creature* c, char ** map, int h, int w, creature** creatures, i
 		}
 	}
 	for(int i=0; i<n; i++) {
-		distance[creatures[i]->pos.y][creatures[i]->pos.x] = -2;
+		if(creatures[i]->hp>0) {
+			distance[creatures[i]->pos.y][creatures[i]->pos.x] = -2;
+		}
 	}
-	
+
+
 	position tmp = {c->pos.x, c->pos.y};
 	unvisited[pos] = tmp;
 	distance[c->pos.y][c->pos.x] = 0;
 	while(pos<numUnvisited) {
-		printf("%d < %d\n",pos,numUnvisited);
 		position curr = unvisited[pos];
 		int x = curr.x;
 		int y = curr.y;
@@ -297,13 +332,15 @@ position getMove(creature* c, char ** map, int h, int w, creature** creatures, i
 			}
 		}
 	}
-	
-	for(int y=0; y<h; y++) {
+
+/*	for(int y=0; y<h; y++) {
 		for(int x=0; x<w; x++) {
 			printf("%3d",distance[y][x]);
 		}
 		printf("\n");
 	}
+ */
+
 /*
  * search for candidate enemies.
  */
@@ -313,7 +350,7 @@ position getMove(creature* c, char ** map, int h, int w, creature** creatures, i
 	int numCandidates = 0;
 
 	for(int i=0; i<n; i++) {
-		if(creatures[i]->type == enemy) {
+		if(creatures[i]->type == enemy && creatures[i]->hp >0) {
 			int x = creatures[i]->pos.x;
 			int y = creatures[i]->pos.y;
 			position up    = {x,y-1};
@@ -386,9 +423,11 @@ position getMove(creature* c, char ** map, int h, int w, creature** creatures, i
 	
 	int closestDist = INT_MAX;
 	position* closeArr = malloc(sizeof(position));
+	closeArr[0] = c->pos;
 	int numClosest = 0;
+//	printf("num candidates %d\n",numCandidates);
 	for(int i=0; i<numCandidates; i++) {
-		printf("candidate %d: (%d, %d)\n",i+1,candidates[i].x,candidates[i].y);
+//		printf("candidate %d: (%d, %d)\n",i+1,candidates[i].x,candidates[i].y);
 		if(distance[candidates[i].y][candidates[i].x] < closestDist) {
 			free(closeArr);
 			numClosest = 1;
@@ -406,8 +445,7 @@ position getMove(creature* c, char ** map, int h, int w, creature** creatures, i
 	position curr = closest;
 	position prev = closest;
 	position goal = c->pos;
-	printf("heading for (%d, %d)\n",closest.x,closest.y);
-	printf("while(%d != %d && %d != %d)\n",curr.x,goal.x,curr.y,goal.y);
+//	printf("heading for (%d, %d)\n",closest.x,closest.y);
 	while(!(curr.x == goal.x && curr.y == goal.y)) {
 		prev = curr;
 		int lowest = INT_MAX;
@@ -416,27 +454,22 @@ position getMove(creature* c, char ** map, int h, int w, creature** creatures, i
 		position left = {curr.x-1,curr.y};
 		position right = {curr.x+1,curr.y};
 
-		printf("(%d; %d) %d steps\n",curr.x,curr.y,distance[curr.y][curr.x]);
-		getchar();
+//		printf("(%d; %d) %d steps\n",curr.x,curr.y,distance[curr.y][curr.x]);
 		if(distance[up.y][up.x]>=0 && distance[up.y][up.x]<lowest) {
 			lowest = distance[up.y][up.x];
-			printf("setting lowest to %d\n",lowest);
 			curr = up;
-		}
-		if(distance[down.y][down.x]>=0 && distance[down.y][down.x]<lowest) {
-			lowest = distance[down.y][down.x];
-			printf("setting lowest to %d\n",lowest);
-			curr = down;
 		}
 		if(distance[left.y][left.x]>=0 && distance[left.y][left.x]<lowest) {
 			lowest = distance[left.y][left.x];
-			printf("setting lowest to %d\n",lowest);
 			curr = left;
 		}
 		if(distance[right.y][right.x]>=0 && distance[right.y][right.x]<lowest) {
 			lowest = distance[right.y][right.x];
-			printf("setting lowest to %d\n",lowest);
 			curr = right;
+		}
+		if(distance[down.y][down.x]>=0 && distance[down.y][down.x]<lowest) {
+			lowest = distance[down.y][down.x];
+			curr = down;
 		}
 	}
 	free(candidates);
@@ -453,4 +486,36 @@ int positionCmp(const void * a, const void * b) {
 		res = lhs.x - rhs.x;
 	}
 	return res;
+}
+
+creature* getTarget(creature* c,creature** creatures,int n) {
+	creature* t = NULL;
+	int lowest = INT_MAX;
+	type enemy = !c->type;
+	
+	position up    = {c->pos.x,c->pos.y-1};
+	position left  = {c->pos.x-1,c->pos.y};
+	position right = {c->pos.x+1,c->pos.y};
+	position down  = {c->pos.x,c->pos.y+1};
+	
+	for(int i=0; i<n; i++) {
+		if(creatures[i]->type==enemy && creatures[i]->hp>0) { //alive and enemy
+			if(pos_compare(up,creatures[i]->pos) ||
+			   pos_compare(left,creatures[i]->pos) ||
+			   pos_compare(right,creatures[i]->pos) ||
+			   pos_compare(down,creatures[i]->pos)) { //is next to player
+			   	if(creatures[i]->hp<lowest) { //has lower hp
+			   		lowest = creatures[i]->hp;
+			   		t = creatures[i];
+			   	} else if(creatures[i]->hp == lowest) { //has the same hp
+			   		if(positionCmp((const void*)&creatures[i]->pos,(const void*)&t->pos)<0) { //is ahead in reading order
+			   			lowest = creatures[i]->hp;
+			   			t = creatures[i];
+			   		}
+			   	}
+			   }
+		}
+	}
+
+	return t;
 }
