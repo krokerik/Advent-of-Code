@@ -33,6 +33,7 @@ int getUnmoved(creature** creatures, int n);
 position getMove(creature* c, char ** map, int h, int w, creature** creatures, int n);
 int positionCmp(const void * a, const void * b);
 creature* getTarget(creature* c,creature** creatures,int n);
+position getPath(position start, position goal, int** distance, int h, int w);
 
 int main() {
 	FILE * fp;
@@ -180,14 +181,12 @@ int part1(char** map, int h, int w, creature** creatures, int n) {
 
 		//move
 		position move = getMove(curr,map,h,w,creatures,n);
-//		printf("moving (%d,%d) to (%d,%d)\n",curr->pos.x,curr->pos.y,move.x,move.y);
 		curr->pos = move;
 		curr->moved = 1;
 
 		//attack
 		creature* target = getTarget(curr,creatures,n);
 		if(target!=NULL) {
-//			printf("(%d,%d) attacking (%d,%d)\n",curr->pos.x,curr->pos.y,target->pos.x,target->pos.y);
 			target->hp -= curr->ap;
 		}
 
@@ -261,12 +260,13 @@ position getMove(creature* c, char ** map, int h, int w, creature** creatures, i
  * Create distance graph
  */
 
-	int distance[h][w];
+	int** distance = malloc(sizeof(int*)*h);
 	position* unvisited = malloc(sizeof(position));
 	int numUnvisited = 1;
 	int pos = 0;
 
 	for(int y=0; y<h; y++) {
+		distance[y] = malloc(sizeof(int)*w);
 		for(int x=0; x<w; x++) {
 			distance[y][x] = -1;
 			if(map[y][x] == '#') {
@@ -332,14 +332,6 @@ position getMove(creature* c, char ** map, int h, int w, creature** creatures, i
 			}
 		}
 	}
-
-/*	for(int y=0; y<h; y++) {
-		for(int x=0; x<w; x++) {
-			printf("%3d",distance[y][x]);
-		}
-		printf("\n");
-	}
- */
 
 /*
  * search for candidate enemies.
@@ -425,9 +417,7 @@ position getMove(creature* c, char ** map, int h, int w, creature** creatures, i
 	position* closeArr = malloc(sizeof(position));
 	closeArr[0] = c->pos;
 	int numClosest = 0;
-//	printf("num candidates %d\n",numCandidates);
 	for(int i=0; i<numCandidates; i++) {
-//		printf("candidate %d: (%d, %d)\n",i+1,candidates[i].x,candidates[i].y);
 		if(distance[candidates[i].y][candidates[i].x] < closestDist) {
 			free(closeArr);
 			numClosest = 1;
@@ -442,40 +432,17 @@ position getMove(creature* c, char ** map, int h, int w, creature** creatures, i
 	}
 	qsort(closeArr,numClosest,sizeof(position),positionCmp);
 	closest = closeArr[0];
-	position curr = closest;
-	position prev = closest;
-	position goal = c->pos;
-//	printf("heading for (%d, %d)\n",closest.x,closest.y);
-	while(!(curr.x == goal.x && curr.y == goal.y)) {
-		prev = curr;
-		int lowest = INT_MAX;
-		position up = {curr.x,curr.y-1};
-		position down = {curr.x,curr.y+1};
-		position left = {curr.x-1,curr.y};
-		position right = {curr.x+1,curr.y};
 
-//		printf("(%d; %d) %d steps\n",curr.x,curr.y,distance[curr.y][curr.x]);
-		if(distance[up.y][up.x]>=0 && distance[up.y][up.x]<lowest) {
-			lowest = distance[up.y][up.x];
-			curr = up;
-		}
-		if(distance[left.y][left.x]>=0 && distance[left.y][left.x]<lowest) {
-			lowest = distance[left.y][left.x];
-			curr = left;
-		}
-		if(distance[right.y][right.x]>=0 && distance[right.y][right.x]<lowest) {
-			lowest = distance[right.y][right.x];
-			curr = right;
-		}
-		if(distance[down.y][down.x]>=0 && distance[down.y][down.x]<lowest) {
-			lowest = distance[down.y][down.x];
-			curr = down;
-		}
-	}
+	position move = getPath(closest,c->pos,distance,h,w);
+
 	free(candidates);
 	free(closeArr);
 	free(unvisited);
-	return prev;
+	for(int i=0; i<h; i++) {
+		free(distance[i]);
+	}
+	free(distance);
+	return move;
 }
 
 int positionCmp(const void * a, const void * b) {
@@ -507,15 +474,58 @@ creature* getTarget(creature* c,creature** creatures,int n) {
 			   	if(creatures[i]->hp<lowest) { //has lower hp
 			   		lowest = creatures[i]->hp;
 			   		t = creatures[i];
-			   	} else if(creatures[i]->hp == lowest) { //has the same hp
+				} else if(creatures[i]->hp == lowest) { //has the same hp
 			   		if(positionCmp((const void*)&creatures[i]->pos,(const void*)&t->pos)<0) { //is ahead in reading order
 			   			lowest = creatures[i]->hp;
 			   			t = creatures[i];
-			   		}
-			   	}
-			   }
+					}
+				}
+			}
 		}
 	}
 
 	return t;
+}
+
+position getPath(position start, position goal, int** distance, int h, int w) {
+	position curr   = start;
+	int own         = distance[curr.y][curr.x];
+	if(own == 1) {
+		return start;
+	}
+	position up     = {curr.x,curr.y-1};
+	position down   = {curr.x,curr.y+1};
+	position left   = {curr.x-1,curr.y};
+	position right  = {curr.x+1,curr.y};
+	position* paths = malloc(sizeof(position));
+	int nPath       = 0;
+	paths[0]        = start;
+	if(distance[up.y][up.x]>=0 && distance[up.y][up.x]==own-1) {
+		nPath++;
+		paths = realloc(paths,sizeof(position)*nPath);
+		curr = getPath(up,goal,distance,h,w);
+		paths[nPath-1] = curr;
+	}
+	if(distance[left.y][left.x]>=0 && distance[left.y][left.x]==own-1) {
+		nPath++;
+		paths = realloc(paths,sizeof(position)*nPath);
+		curr = getPath(left,goal,distance,h,w);
+		paths[nPath-1] = curr;
+	}
+	if(distance[right.y][right.x]>=0 && distance[right.y][right.x]==own-1) {
+		nPath++;
+		paths = realloc(paths,sizeof(position)*nPath);
+		curr = getPath(right,goal,distance,h,w);
+		paths[nPath-1] = curr;
+	}
+	if(distance[down.y][down.x]>=0 && distance[down.y][down.x]==own-1) {
+		nPath++;
+		paths = realloc(paths,sizeof(position)*nPath);
+		curr = getPath(down,goal,distance,h,w);
+		paths[nPath-1] = curr;
+	}
+	qsort(paths,nPath,sizeof(position),positionCmp);
+	curr = paths[0];
+	free(paths);
+	return curr;
 }
