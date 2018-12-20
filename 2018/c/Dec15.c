@@ -24,7 +24,6 @@ typedef struct creature {
 } creature;
 
 creature* createCreature(char type, int x, int y);
-void printMap(char** map, int h, int w, creature** creatures, int n);
 int pos_compare(position lhs, position rhs);
 int part1(char** map, int h, int w, creature** creatures, int n);
 int getHPOfType(creature** list, int n, type t);
@@ -33,7 +32,8 @@ int getUnmoved(creature** creatures, int n);
 position getMove(creature* c, char ** map, int h, int w, creature** creatures, int n);
 int positionCmp(const void * a, const void * b);
 creature* getTarget(creature* c,creature** creatures,int n);
-position getPath(position start, position goal, int** distance, int h, int w);
+position getPath(position start, position goal, int** distance);
+int part2(char** map, int h, int w, creature** creatures, int n);
 
 int main() {
 	FILE * fp;
@@ -82,8 +82,20 @@ int main() {
 		map[height-1] = row;
 	}
 
-	printf("part1: %d\n", part1(map, height, width, creatures, numCreatures));
 
+	char** map2 = malloc(sizeof(char*)*height);
+	for(int i=0; i<height; i++) {
+		map2[i] = malloc(sizeof(char)*width);
+		memcpy(map2[i],map[i],sizeof(char)*width);
+	}
+	creature** creatures2 = malloc(sizeof(creature*)*numCreatures);
+	for(int i=0; i<numCreatures; i++) {
+		creatures2[i] = malloc(sizeof(creature));
+		memcpy(creatures2[i],creatures[i],sizeof(creature));
+	}
+
+	printf("part1: %d\n", part1(map, height, width, creatures, numCreatures));
+	printf("part2: %d\n", part2(map2, height, width, creatures2, numCreatures));
 	for(int i=0; i<numCreatures; i++) {
 		free(creatures[i]);
 	}
@@ -117,47 +129,6 @@ creature* createCreature(char type, int x, int y) {
 			fprintf(stderr,"Invalid type when creating new creature\n");
 	}
 	return c;
-}
-
-void printMap(char** map, int h, int w, creature** creatures, int n) {
-	for(int i=0; i<h; i++) {
-		int onRow[n];
-		int numOnRow = 0;
-		for(int j=0; j<w; j++) {
-			int found = 0;
-			for(int k=0; k<n; k++) {
-				position tmp = {j,i};
-				if(creatures[k]->hp>0 && pos_compare(creatures[k]->pos, tmp)) {
-					found = 1;
-					onRow[numOnRow] = k;
-					numOnRow++;
-					switch(creatures[k]->type) {
-						case elf:
-							printf("%c", 'E');
-							break;
-						case goblin:
-							printf("%c", 'G');
-							break;
-						default:
-							fprintf(stderr,"invalid creature type\n");
-							exit(EXIT_FAILURE);
-					}
-				}
-			}
-			if(found == 0) {
-				printf("%c",map[i][j]);
-			}
-		}
-		for(int j=0; j<numOnRow; j++) {
-			if(creatures[onRow[j]]->type == elf) {
-				printf(" E");
-			} else {
-				printf(" G");
-			}
-			printf("(%d)",creatures[onRow[j]]->hp);
-		}
-		printf("\n");
-	}
 }
 
 int pos_compare(position lhs, position rhs) {
@@ -195,22 +166,14 @@ int part1(char** map, int h, int w, creature** creatures, int n) {
 		goblinHP = getHPOfType(creatures,n,goblin);
 		if(getUnmoved(creatures,n) == 0) {
 			round++;
-			printf("round %d\n",round);
-			printMap(map,h,w,creatures,n);
-			printf("elf: %d\n",elfHP);
-			printf("goblin: %d\n",goblinHP);
 			for(int i=0; i<n; i++) {
 				creatures[i]->moved = 0;
 			}
 			turn = 0;
 		}
 	}
-	printMap(map,h,w,creatures,n);
-	printf("elf: %d\n",elfHP);
-	printf("goblin: %d\n",goblinHP);
-	printf("round: %d\n",round);
-	int winner = elfHP>goblinHP ? elfHP : goblinHP;
-	return round * winner;
+
+	return elfHP>goblinHP ? elfHP*round : goblinHP*round;
 }
 
 int getHPOfType(creature** list, int n, type t) {
@@ -412,7 +375,7 @@ position getMove(creature* c, char ** map, int h, int w, creature** creatures, i
 
 		}
 	}
-	
+
 	int closestDist = INT_MAX;
 	position* closeArr = malloc(sizeof(position));
 	closeArr[0] = c->pos;
@@ -433,7 +396,7 @@ position getMove(creature* c, char ** map, int h, int w, creature** creatures, i
 	qsort(closeArr,numClosest,sizeof(position),positionCmp);
 	closest = closeArr[0];
 
-	position move = getPath(closest,c->pos,distance,h,w);
+	position move = getPath(closest,c->pos,distance);
 
 	free(candidates);
 	free(closeArr);
@@ -459,12 +422,12 @@ creature* getTarget(creature* c,creature** creatures,int n) {
 	creature* t = NULL;
 	int lowest = INT_MAX;
 	type enemy = !c->type;
-	
+
 	position up    = {c->pos.x,c->pos.y-1};
 	position left  = {c->pos.x-1,c->pos.y};
 	position right = {c->pos.x+1,c->pos.y};
 	position down  = {c->pos.x,c->pos.y+1};
-	
+
 	for(int i=0; i<n; i++) {
 		if(creatures[i]->type==enemy && creatures[i]->hp>0) { //alive and enemy
 			if(pos_compare(up,creatures[i]->pos) ||
@@ -487,7 +450,7 @@ creature* getTarget(creature* c,creature** creatures,int n) {
 	return t;
 }
 
-position getPath(position start, position goal, int** distance, int h, int w) {
+position getPath(position start, position goal, int** distance) {
 	position curr   = start;
 	int own         = distance[curr.y][curr.x];
 	if(own == 1) {
@@ -503,29 +466,93 @@ position getPath(position start, position goal, int** distance, int h, int w) {
 	if(distance[up.y][up.x]>=0 && distance[up.y][up.x]==own-1) {
 		nPath++;
 		paths = realloc(paths,sizeof(position)*nPath);
-		curr = getPath(up,goal,distance,h,w);
+		curr = getPath(up,goal,distance);
 		paths[nPath-1] = curr;
 	}
 	if(distance[left.y][left.x]>=0 && distance[left.y][left.x]==own-1) {
 		nPath++;
 		paths = realloc(paths,sizeof(position)*nPath);
-		curr = getPath(left,goal,distance,h,w);
+		curr = getPath(left,goal,distance);
 		paths[nPath-1] = curr;
 	}
 	if(distance[right.y][right.x]>=0 && distance[right.y][right.x]==own-1) {
 		nPath++;
 		paths = realloc(paths,sizeof(position)*nPath);
-		curr = getPath(right,goal,distance,h,w);
+		curr = getPath(right,goal,distance);
 		paths[nPath-1] = curr;
 	}
 	if(distance[down.y][down.x]>=0 && distance[down.y][down.x]==own-1) {
 		nPath++;
 		paths = realloc(paths,sizeof(position)*nPath);
-		curr = getPath(down,goal,distance,h,w);
+		curr = getPath(down,goal,distance);
 		paths[nPath-1] = curr;
 	}
 	qsort(paths,nPath,sizeof(position),positionCmp);
 	curr = paths[0];
 	free(paths);
 	return curr;
+}
+
+int part2(char** map, int h, int w, creature** creatures, int n) {
+	int elfHP      = getHPOfType(creatures,n,elf);
+	int goblinHP   = getHPOfType(creatures,n,goblin);
+	int round      = 0;
+	int turn       = 0;
+	int boost      = 0;
+	type winner    = goblin;
+
+	while(winner != elf) {
+		round = 0;
+		turn  = 0;
+		int numElves = 0;
+		boost++;
+		creature** clones = malloc(sizeof(creature*)*n);
+		for(int i=0; i<n; i++) {
+			clones[i] = malloc(sizeof(creature));
+			memcpy(clones[i],creatures[i],sizeof(creature));
+			if(clones[i]->type == elf) {
+				clones[i]->ap += boost;
+				numElves++;
+			}
+		}
+		elfHP    = getHPOfType(clones,n,elf);
+		goblinHP = getHPOfType(clones,n,goblin);
+		while(elfHP>0 && goblinHP>0) {
+			turn++;
+			//aquire
+			creature* curr = getCreature(clones,n);
+
+			//move
+			position move = getMove(curr,map,h,w,clones,n);
+			curr->pos = move;
+			curr->moved = 1;
+
+			//attack
+			creature* target = getTarget(curr,clones,n);
+			if(target!=NULL) {
+				target->hp -= curr->ap;
+			}
+
+			//reset
+			elfHP    = getHPOfType(clones,n,elf);
+			goblinHP = getHPOfType(clones,n,goblin);
+			if(getUnmoved(clones,n) == 0) {
+				round++;
+				for(int i=0; i<n; i++) {
+					clones[i]->moved = 0;
+				}
+				turn = 0;
+			}
+		}
+		for(int i=0; i<n; i++) {
+			if(clones[i]->type == elf && clones[i]->hp>0) {
+				numElves--;
+			}
+		}
+		if(numElves==0) {
+			winner = elf;
+		}
+		free(clones);
+	}
+	return elfHP>goblinHP ? elfHP*round : goblinHP*round;
 }
