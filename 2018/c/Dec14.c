@@ -82,8 +82,7 @@ int part2(int* recipes, int numRecipes, char* goal) {
 	for(int i=0; i<nDigits; i++) {
 		goalArr[i] = goal[i]-'0';
 	}
-
-	while(getPos(recipes+numRecipes-(nDigits+1),goalArr,nDigits+1,nDigits) == -1) {
+	while(numRecipes<nDigits+2 || getPos(recipes+numRecipes-(nDigits+2),goalArr,nDigits+1,nDigits) == -1) {
 		int scores[2] = {recipes[workers[0]], recipes[workers[1]]};
 		int tot = scores[0] + scores[1];
 		int second = tot%10;
@@ -104,7 +103,9 @@ int part2(int* recipes, int numRecipes, char* goal) {
 		workers[0] = (1+scores[0]+workers[0])%numRecipes;
 		workers[1] = (1+scores[1]+workers[1])%numRecipes;
 	}
-	return getPos(recipes,goalArr,numRecipes,nDigits);
+	int score = getPos(recipes,goalArr,numRecipes,nDigits);
+	free(recipes);
+	return score;
 }
 
 // gets the starting position of the second array in the first array, returns
