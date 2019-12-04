@@ -6,7 +6,7 @@ fp           = open(puzzle_input,'r')
 
 # solution code begins
 
-def is_valid(pwd):
+def is_part1(pwd):
 	res = [int(i) for i in str(pwd)]
 	if(len(res) != 6): # It is a six-digit number.
 		return False
@@ -20,10 +20,32 @@ def is_valid(pwd):
 				repeats = True
 	return repeats
 
+def is_part2(pwd):
+	res = [int(i) for i in str(pwd)]
+	cur = 0
+	repeats = False
+	for i,left in enumerate(res):
+		if i<5:
+			right = res[i+1]
+			if left == right:
+				repeats = True
+				cur += 1
+			elif cur == 1: # the two adjacent matching digits are not part of a larger group of matching digits
+				return True
+			else:
+				cur = 0
+			if cur > 1:
+				repeats = False
+	return repeats
+
 rang = fp.read().strip().split('-')
 rang = list(map(int,rang))
-valid = 0
+part1 = 0
+part2 = 0
 for n in range(rang[0], rang[1]+1): # The value is within the range given in your puzzle input.
-	if is_valid(n):
-		valid += 1
-print("part 1: " + str(valid))
+	if is_part1(n):
+		part1 += 1
+		if is_part2(n):
+			part2 += 1
+print("part 1: " + str(part1))
+print("part 2: " + str(part2))
