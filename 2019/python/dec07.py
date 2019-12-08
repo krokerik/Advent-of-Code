@@ -32,14 +32,7 @@ def less_than(data):
 def equals(data):
 	return data[0] == data[1]
 
-def run(program, input1=None, input2=None):
-	if input1 is not None:
-		program[1] = input1
-	if input2 is not None:
-		program[2] = input2
-
-	position = 0
-
+def run(program, position=0):
 	while program[position] != 99:
 		instruction = [int(i) for i in str(program[position])]
 		opcode      = int("".join(map(str,instruction[-2:])))
@@ -56,8 +49,10 @@ def run(program, input1=None, input2=None):
 			elif j is 1:
 				input.append(program[position+i+1])
 
-		output    = program[position+argc]
-		res = operation(input)
+		output = program[position+argc]
+		res    = operation(input)
+		if opcode is 4:
+			return (position+argc+1, program)
 		if type is 1:
 			if res is True:
 				position = input[1]
@@ -67,7 +62,7 @@ def run(program, input1=None, input2=None):
 			program[output] = res
 			position += argc+1
 
-	return program[0]
+	return (-1,program)
 
 opcodes = { #(function, argc, type)
 1:(addition,3,0),
@@ -84,12 +79,11 @@ io = queue.Queue()
 
 programs = [[int(m.strip()) for m in n.split(',')] for n in fp.read().split() if n.strip()]
 phases   = list(itertools.permutations([0,1,2,3,4]))
+phases2  = list(itertools.permutations([5,6,7,8,9]))
 
-for program_ in programs:
-	biggest = 0
-	part1   = None
+for program in programs:
+	outputs = []
 	for setting in phases:
-		program = program_.copy()
 		io.queue.clear()
 		input = 0
 		for amp in setting:
@@ -97,7 +91,34 @@ for program_ in programs:
 			io.put(input)
 			run(program)
 			input = io.get()
-		if input > biggest:
-			biggest = input
-			part1   = setting
-	print("part 1:",part1,biggest)
+		outputs.append(input)
+	print("part 1:",max(outputs))
+
+	outputs = []
+	for setting in phases2:
+		io.queue.clear()
+		input     = 0
+		positions = []
+		states    = []
+		halted    = False
+		for amp in setting:
+			io.put(amp)
+			io.put(input)
+			res = run(program)
+			positions.append(res[0])
+			states.append(res[1])
+			input = io.get()
+		while not halted:
+			for i,state in enumerate(states):
+				io.put(input)
+				res = run(state,positions[i])
+				states[i]    = res[1]
+				if res[0] is -1:
+					positions[i] = 0
+					if i is 4: #if it is last amp
+						halted = True
+				else:
+					positions[i] = res[0]
+				input = io.get()
+		outputs.append(input)
+	print("part 2:",max(outputs))
