@@ -5,12 +5,16 @@
 
 #define INPUT "../input/10.txt"
 
+long getPaths(int* adapters, int numAdapters, int curr, int goal);
+
+long* outputs;
+
 int main() {
 	FILE * fp;
 	char * line     = NULL;
 	size_t len      = 0;
-	int part1      = 0;
-	int part2      = 0;
+	int part1       = 0;
+	long part2      = 0;
 	int numAdapters = 0;
 	int* adapters   = malloc(sizeof(int));
 	int device      = 0;
@@ -52,9 +56,34 @@ int main() {
 	}
 	part1 = jumps[0]*jumps[2];
 	printf("part 1: %d\n", part1);
-	printf("part 2: %d\n", part2);
+
+	outputs = malloc(sizeof(long)*(device+1));
+	memset(outputs,-1,sizeof(long)*(device+1));
+
+	part2 = getPaths(adapters,numAdapters,0,device);
+	printf("part 2: %ld\n", part2);
 
 	fclose(fp);
 	free(line);
+	free(adapters);
+	free(outputs);
 	exit(EXIT_SUCCESS);
+}
+
+long getPaths(int* adapters, int numAdapters, int curr, int goal) {
+	if(outputs[curr]!=-1) {
+		return outputs[curr];
+	}
+	if(curr == goal) {
+		outputs[curr] = 1;
+		return 1;
+	}
+	long paths = 0;
+	for(int i=0; i<numAdapters; i++) {
+		if(adapters[i] <= curr+3 && adapters[i]>curr) {
+			paths += getPaths(adapters, numAdapters, adapters[i], goal);
+		}
+	}
+	outputs[curr] = paths;
+	return paths;
 }
