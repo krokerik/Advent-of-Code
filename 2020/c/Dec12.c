@@ -19,6 +19,8 @@ typedef struct instruction {
 	int dist;
 } instruction;
 
+void rotate(int* wx, int* wy, int deg);
+
 int main() {
 	FILE * fp;
 	char * line = NULL;
@@ -95,9 +97,49 @@ int main() {
 	}
 	part1 = abs(posx) + abs(posy);
 	printf("part 1:%d\n", part1);
+	int wayposx = 10, wayposy = -1;
+	posx = 0, posy=0;
+	for(int i=0; i<numInstructions; i++) {
+		switch(instructions[i].dir) {
+			case north:
+			case south:
+			case west:
+			case east:
+				wayposx += instructions[i].dist * multi[instructions[i].dir][0];
+				wayposy += instructions[i].dist * multi[instructions[i].dir][1];
+				break;
+			case left:
+			case right:
+				rotate(&wayposy,&wayposx,instructions[i].dist * multi[instructions[i].dir][0]);
+				break;
+			case forward:
+				posx += wayposx * instructions[i].dist;
+				posy += wayposy * instructions[i].dist;
+				break;
+		}
+	}
+	part2 = abs(posx) + abs(posy);
 	printf("part 2:%d\n", part2);
 	fclose(fp);
 	free(line);
 	free(instructions);
 	exit(EXIT_SUCCESS);
+}
+
+void rotate(int* wx, int* wy, int deg) {
+	int tmp;
+	while(deg!=0) {
+		if(deg<0) {
+			tmp = *wx;
+			*wx = *wy*-1;
+			*wy = tmp;
+			deg += 90;
+		} else {
+			tmp = *wx*-1;
+			*wx = *wy;
+			*wy = tmp;
+			deg -= 90;
+		}
+	}
+	return;
 }
